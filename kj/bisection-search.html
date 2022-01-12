@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>二分法查找演示</title>
+    <!-- <script src="https://cdn.plot.ly/plotly-2.8.3.min.js"></script> -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.min.js"></script>
+    <script>
+        MathJax = {
+            options: {
+                enableMenu: false
+            }
+        };
+    </script>
+
+
+    <script src="https://code.createjs.com/1.0.0/createjs.min.js"></script>
+    <script>
+        function Button(fc, bc, label, label_style, w, h) {
+            var label1 = new createjs.Text(label, label_style, fc);
+            var label1_w = label1.getMeasuredWidth();
+            var label1_h = label1.getMeasuredHeight();
+            if (label1_w < w)
+                label1.x = (w - label1_w) / 2;
+            if (label1_h < h)
+                label1.y = (h - label1_h) / 2;
+
+            bg = new createjs.Shape();
+            bg.graphics.beginFill(bc).drawRoundRect(0, 0, w, h, 5);
+
+            var c = new createjs.Container();
+            c.addChild(bg, label1);
+            c.mouseChildren = false;
+            c.cursor = 'pointer';
+            c.on('mouseover', function (evt) {
+                label1.alpha = 0.5
+            });
+            c.on('mouseout', function (evt) {
+                label1.alpha = 1
+            });
+
+            return c;
+        }
+
+        function Checkbox(fc, bc, label, label_style, w, h) {
+            var label1 = new createjs.Text(label, label_style, fc);
+            var label1_w = label1.getMeasuredWidth();
+            var label1_h = label1.getMeasuredHeight();
+            if (label1_w < w)
+                label1.x = (w - label1_w) / 2;
+            if (label1_h < h)
+                label1.y = (h - label1_h) / 2;
+
+            bg = new createjs.Shape();
+            bg.graphics.beginFill(bc).drawRoundRect(0, 0, w, h, 5);
+
+            var c = new createjs.Container();
+            c.addChild(bg, label1);
+            c.mouseChildren = false;
+            c.cursor = 'pointer';
+            c.on('mouseover', function (evt) {
+                label1.alpha = 0.5
+            });
+            c.on('mouseout', function (evt) {
+                label1.alpha = 1
+            });
+
+            return c;
+        }
+
+        var stage, boxes, numbers;
+        var target_number;
+        var shape_target_number;
+        var numbers_count = 15;
+        var click_count = 0;
+        var idx_lo;
+        var idx_hi;
+        var idx_center;
+        var down_arrow;
+        var text_comp;
+        var animates_enabled = false;
+        function gen_num_boxes(count, box_width, box_height, box_click) {
+            var boxes = {
+                "g": null,
+                "box": [],
+                "num": [],
+                "mask": []
+            };
+            var container = new createjs.Container()
+            container.cursor = 'pointer';
+            boxes.g = container;
+            for (i = 0; i < count; i++) {
+                var text = new createjs.Text('888', 'bold 25px Consola', 'black');
+                text.x = i * box_width + (box_width) / 2;
+                text.y = (box_height - 25) / 2;
+                text.textAlign = 'center';
+                var box = new createjs.Shape();
+                box.graphics.beginStroke('blue').beginFill('#555').drawRect(i * box_width, 0, box_width, box_height);
+                box.index = i;
+                box.clicked = false;
+                box.num = text;
+                boxes.box.push(box);
+                boxes.num.push(text);
+                drop_mask = new createjs.Shape();
+                drop_mask.graphics.beginStroke('#f00');
+                drop_mask.graphics.setStrokeStyle(3);
+                drop_mask.graphics.moveTo(i * box_width, 0).lineTo((i + 1) * box_width, box_height);
+                drop_mask.graphics.moveTo((i + 1) * box_width, 0).lineTo(i * box_width, box_height);
+                drop_mask.alpha = 0;
+                boxes.mask.push(drop_mask);
+
+                var idx = new createjs.Text(i, 'italic 25px Consola', 'black');
+                idx.x = i * box_width + (box_width) / 2;
+                idx.y = box_height + 2;
+                idx.textAlign = 'center';
+
+                container.addChild(text, box, drop_mask, idx);
+                box.on('click', function (evt) {
+                    var b = evt.target;
+                    if (!b.clicked) {
+                        b.clicked = true;
+                        b.alpha = 0.2;
+                        box_click(b, b.num, b.index);
+                    }
+                });
+            }
+
+            boxes.reset = function (numbers) {
+                for (i = 0; i < count; i++) {
+                    boxes.box[i].alpha = 1;
+                    boxes.num[i].text = numbers[i];
+                    boxes.box[i].clicked = false;
+                    boxes.mask[i].alpha = 0;
+                }
+            };
+            boxes.openall = function () {
+                for (i = 0; i < count; i++) {
+                    if (boxes.box[i].alpha == 1)
+                        boxes.box[i].alpha = 0.05;
+                }
+            };
+            boxes.open = function (i) {
+                boxes.box[i].alpha = 0.2;
+            };
+            boxes.drop = function (from, to) {
+                for (i = from; i < count && i <= to; i++) {
+                    createjs.Tween.get(boxes.mask[i])
+                        .to({ "alpha": 1 }, 800, createjs.Ease.elasticIn);
+                }
+            }
+            return boxes;
+        }
+
+        function gen_numbers(count) {
+            var nums = [];
+            var a1 = Math.random() * 800;
+            var a2 = a1 + 100 + Math.random() * 100;
+            var b = (a2 - a1) / count;
+            for (i = 0; i < count; i++) {
+                a1 = Math.floor(a1 + Math.random() * b + 1);
+                nums.push(a1);
+            }
+            return nums;
+        }
+
+        function init() {
+            stage = new createjs.Stage("canvas1");
+            stage.enableMouseOver();
+            var bg = new createjs.Shape();
+            bg.graphics.beginFill('#fff').drawRect(0, 0, stage.canvas.width, stage.canvas.height);
+
+            shape_target_number = new createjs.Text('', 'bold 25px Consola', 'black');
+            shape_target_number.x = 200;
+            shape_target_number.y = 25;
+            button1 = new Button('#000', '#f00', '重新开始', "bold 20px Arial", 150, 35);
+            button1.x = button1.y = 20;
+            stage.addChild(bg, button1, shape_target_number);
+
+            button1.on('click', function (evt) {
+                if (click_count > 0 || document.getElementById('checkbox1').checked!=animates_enabled)
+                    new_game();
+            });
+
+            w = (stage.canvas.width - 50) / numbers_count;
+
+            boxes = gen_num_boxes(numbers_count, w, w, box_click);
+            boxes.g.x = 25;
+            boxes.g.y = 150;
+            stage.addChild(boxes.g);
+
+            down_arrow = new createjs.Bitmap('downarrow.png');
+            text_comp = new createjs.Text('A<B', '30px Consola', 'black');
+            text_comp.textAlign = 'center';
+            stage.addChild(down_arrow, text_comp);
+
+
+
+            new_game();
+
+            createjs.Ticker.timingMode = createjs.Ticker.RAF;
+            createjs.Ticker.addEventListener("tick", stage);
+        }
+        function box_click(box, text, i) {
+            click_count += 1;
+            if (numbers[i] == target_number) {
+                shape_target_number.text += '找到了。点击次数' + click_count + '。';
+                boxes.openall();
+                text_comp.x = down_arrow.x + down_arrow.getBounds().width/2;
+                text_comp.text = numbers[i] + '=' + target_number;
+                text_comp.textAlign = 'center';
+            } else if(numbers[i] < target_number) {
+                text_comp.x = down_arrow.x;
+                text_comp.text = numbers[i] + '<' + target_number;
+                text_comp.textAlign = 'left';
+            } else {
+                text_comp.x = down_arrow.x + down_arrow.getBounds().width;
+                text_comp.text = target_number + '<' + numbers[i];
+                text_comp.textAlign = 'right';
+            }
+
+            if(animates_enabled) {
+                text_comp.alpha = 1;
+                move_cursor();
+            }
+        }
+
+        function move_cursor() {
+            var drop_from;
+            var drop_to;
+            if (numbers[idx_center] > target_number) {
+                drop_from = idx_center;
+                drop_to = idx_hi;
+                idx_hi = idx_center - 1;
+                idx_center = Math.floor((idx_lo + idx_hi) / 2);
+                var x = 25 + (stage.canvas.width - 50) / numbers_count * idx_center;
+                createjs.Tween.get(down_arrow)
+                    .to({ "x": x }, 1000, createjs.Ease.cubicInOut);
+                boxes.drop(drop_from, drop_to);
+            } else if (numbers[idx_center] < target_number) {
+                drop_from = idx_lo;
+                drop_to = idx_center;
+                idx_lo = idx_center + 1;
+                idx_center = Math.floor((idx_lo + idx_hi) / 2);
+                var x = 25 + (stage.canvas.width - 50) / numbers_count * idx_center;
+                createjs.Tween.get(down_arrow)
+                    .to({ "x": x }, 1000, createjs.Ease.cubicInOut);
+                boxes.drop(drop_from, drop_to);
+            } else {
+                createjs.Tween.get(down_arrow)
+                    .to({ "y": down_arrow.y - 15 }, 300)
+                    .to({ "y": 95 }, 800, createjs.Ease.elasticIn);
+            }
+        }
+        function new_game() {
+            numbers = gen_numbers(numbers_count);
+            console.log(numbers.join(' '))
+            target_number = numbers[Math.floor(7 + (Math.random() * 2 - 1) * (numbers_count - 5) / 2)];
+            shape_target_number.text = '查找目标:' + target_number + '。';
+            boxes.reset(numbers);
+            click_count = 0;
+            idx_lo = 0;
+            idx_hi = 14;
+            idx_center = Math.floor((idx_lo + idx_hi) / 2);
+            down_arrow.x = 25 + (stage.canvas.width - 50) / numbers_count * idx_center;
+            down_arrow.y = 95;
+            text_comp.y = 100;
+            text_comp.alpha = 0;
+
+            if(document.getElementById('checkbox1').checked) {
+                animates_enabled = true;
+                down_arrow.alpha = 1;
+            }else {
+                animates_enabled = false;
+                down_arrow.alpha = 0;
+            }
+        }
+    </script>
+    <style>
+        #canvas1 {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        #frame {
+            width: 805px;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 35px;
+        }
+
+        .title1 {
+            text-align: left;
+            font-size: 25px;
+            font-weight: bold;
+        }
+        .options {
+            font-size: 20px;
+        }
+        .options input {
+            vertical-align: middle;
+            height: 25px;
+            width: 25px;
+        }
+
+        .para {
+            margin-left: 20px;
+            font-size: 18px;
+            text-indent: 2em;
+        }
+    </style>
+</head>
+
+<body onload="init();">
+    <div id='frame'>
+        <div class='title'>二分法查找演示</div>
+        <div>
+            <p class='title1'>问题</p>
+            <p class='para'>在已升序排序的包含15个元素的正整数序列中，查找某个特定值出现的位置。序列中元素的值在点击查看之前未知大小。</p>
+            <p class='para'>使用二分法查找，可在最多4次点击之内定位目标。</p>
+        </div>
+        <p class='title1'>演示</p>
+        <div style="border: solid black 1px;">
+            <canvas id="canvas1" width="800" height="250">
+                canvas
+            </canvas>
+            <div class='options'>
+                <input id="checkbox1" type="checkbox">启用二分法辅助(重新开始生效)</input>
+            </div>
+        </div>
+        <div class='math-tex'>
+            <p class='title1'>算法</p>
+            <p class='para'>
+                以\(A\)表示包含目标的区域, \(T\)表示查找目标。
+            </p>
+            <p class='para'>
+                步骤一: 每次取A的中间位置的元素\( A_m\)，
+                将\(A\)分为\(A_{left}\)和\(A_{right}\)。
+                若\( A_m = T \)则完成查找。
+            </p>
+            <p class='para'>
+                否则，
+                \[
+                \begin{equation}
+                A=\left\{
+                \begin{aligned}
+                A_{left} && A_m \gt T \\
+                A_{right} && A_m \lt T \\
+                \end{aligned}
+                \right.
+                \end{equation}
+                \]
+            </p>
+            <p class='para'>
+                重复步骤一。
+            </p>
+            <p class='title1'>时间复杂度</p>
+            <p class='para'>
+                每次取值比较将待查找区间一分为二。最差的情况下，当待查找区间只有一个元素时命中目标。以\( n \)表示元素个数，\( x \)表示切分次数，则有：
+                \[ n \times (\frac{1}{2})^x = 1 \]
+                \[ n \times \frac{1}{2^x} = 1\]
+                \[ 2^x = n\]
+                \[ x = \log_2(n)\]
+            </p>
+            <p class='para'>
+                \( \log_2(1000000) \approx 20 \)，也即，当 \( n \) 为一百万时，最多经过20个步骤便可完成查找。
+            </p>
+        </div>
+        <div id="gd"></div>
+    </div>
+</body>
+
+</html>
