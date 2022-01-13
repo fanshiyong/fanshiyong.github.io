@@ -1,10 +1,9 @@
 <!DOCTYPE html>
 <html>
-
 <head>
+    <meta charset="utf-8" />
     <title>二分法查找演示</title>
     <!-- <script src="https://cdn.plot.ly/plotly-2.8.3.min.js"></script> -->
-    <!-- <script src="https://cdn.bootcdn.net/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.min.js"></script> -->
     <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
     <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
@@ -21,32 +20,6 @@
 
     <script>
         function Button(fc, bc, label, label_style, w, h) {
-            var label1 = new createjs.Text(label, label_style, fc);
-            var label1_w = label1.getMeasuredWidth();
-            var label1_h = label1.getMeasuredHeight();
-            if (label1_w < w)
-                label1.x = (w - label1_w) / 2;
-            if (label1_h < h)
-                label1.y = (h - label1_h) / 2;
-
-            bg = new createjs.Shape();
-            bg.graphics.beginFill(bc).drawRoundRect(0, 0, w, h, 5);
-
-            var c = new createjs.Container();
-            c.addChild(bg, label1);
-            c.mouseChildren = false;
-            c.cursor = 'pointer';
-            c.on('mouseover', function (evt) {
-                label1.alpha = 0.5
-            });
-            c.on('mouseout', function (evt) {
-                label1.alpha = 1
-            });
-
-            return c;
-        }
-
-        function Checkbox(fc, bc, label, label_style, w, h) {
             var label1 = new createjs.Text(label, label_style, fc);
             var label1_w = label1.getMeasuredWidth();
             var label1_h = label1.getMeasuredHeight();
@@ -114,8 +87,8 @@
                 boxes.mask.push(drop_mask);
 
                 var idx = new createjs.Text(i, 'italic 25px Consola', 'black');
-                idx.x = i * box_width + (box_width) / 2;
-                idx.y = box_height + 2;
+                idx.x = (i + 0.5) * box_width;
+                idx.y = box_height + 4;
                 idx.textAlign = 'center';
 
                 container.addChild(text, box, drop_mask, idx);
@@ -177,7 +150,7 @@
             stage.addChild(bg, button1, shape_target_number);
 
             button1.on('click', function (evt) {
-                if (click_count > 0 || document.getElementById('checkbox1').checked != animates_enabled)
+                if ((click_count > 0) || (document.getElementById('checkbox1').checked == animates_enabled))
                     new_game();
             });
 
@@ -189,17 +162,16 @@
             stage.addChild(boxes.g);
 
             down_arrow = new createjs.Bitmap('downarrow.png');
-            text_comp = new createjs.Text('A<B', '30px Consola', 'black');
+            text_comp = new createjs.Text('', '30px Consola', 'black');
             text_comp.textAlign = 'center';
             stage.addChild(down_arrow, text_comp);
-
-
 
             new_game();
 
             createjs.Ticker.timingMode = createjs.Ticker.RAF;
             createjs.Ticker.addEventListener("tick", stage);
         }
+
         function box_click(box, text, i) {
             if(animates_enabled && i!=idx_center)
                 return;
@@ -262,7 +234,7 @@
             console.log(numbers.join(' '))
             var idxc=Math.floor(numbers_count/2);
             var idx = idxc;
-            while(idx == idxc) {
+            while(idx >= (idxc-1) && idx <= (idxc+1)) {
                 idx = Math.floor(7 + (Math.random() * 2 - 1) * (numbers_count - 5) / 2);
             }
             target_number = numbers[idx];
@@ -278,11 +250,11 @@
             text_comp.alpha = 0;
 
             if (document.getElementById('checkbox1').checked) {
-                animates_enabled = true;
-                down_arrow.alpha = 1;
-            } else {
                 animates_enabled = false;
                 down_arrow.alpha = 0;
+            } else {
+                animates_enabled = true;
+                down_arrow.alpha = 1;
             }
         }
     </script>
@@ -344,7 +316,7 @@
                 canvas
             </canvas>
             <div class='options'>
-                <input id="checkbox1" type="checkbox">启用二分法辅助(重新开始生效)</input>
+                <input id="checkbox1" type="checkbox">关闭辅助，我自己来(重新开始生效)</input>
             </div>
         </div>
         <div id="points" class='math-tex'>
@@ -357,7 +329,7 @@
                         以\(A\)表示包含目标的区域, \(T\)表示查找目标。
                     </p>
                     <p class='para'>
-                        步骤一: 每次取A的中间位置的元素\( A_m\)，
+                        步骤一: 每次取\(A\)的中间位置的元素\( A_m\)，
                         将\(A\)分为\(A_{left}\)和\(A_{right}\)。
                         若\( A_m = T \)则完成查找。
                     </p>

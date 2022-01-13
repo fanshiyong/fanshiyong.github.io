@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>二分法查找练习</title>
+    <script src="https://code.createjs.com/1.0.0/createjs.min.js"></script>
+    <script>
+        function Button(fc, bc, label, label_style, w, h) {
+            var label1 = new createjs.Text(label, label_style, fc);
+            var label1_w = label1.getMeasuredWidth();
+            var label1_h = label1.getMeasuredHeight();
+            if (label1_w < w)
+                label1.x = (w - label1_w) / 2;
+            if (label1_h < h)
+                label1.y = (h - label1_h) / 2;
+
+            bg = new createjs.Shape();
+            bg.graphics.beginFill(bc).drawRoundRect(0, 0, w, h, 5);
+
+            var c = new createjs.Container();
+            c.addChild(bg, label1);
+            c.mouseChildren = false;
+            c.cursor = 'pointer';
+            c.on('mouseover', function (evt) {
+                label1.alpha = 0.5
+            });
+            c.on('mouseout', function (evt) {
+                label1.alpha = 1
+            });
+
+            return c;
+        }
+
+        var stage, boxes, numbers;
+        var target_number;
+        var shape_target_number;
+        var numbers_count = 15;
+        var click_count = 0;
+        function gen_num_boxes(count, box_width, box_height, box_click) {
+            var boxes = {
+                "g": null,
+                "box": [],
+                "num": []
+            };
+            var container = new createjs.Container()
+            container.cursor = 'pointer';
+            boxes.g = container;
+            for (i = 0; i < count; i++) {
+                var text = new createjs.Text('888', 'bold 25px Consola', 'black');
+                text.x = i * box_width + (box_width) / 2;
+                text.y = (box_height - 25) / 2;
+                text.textAlign = 'center';
+                var box = new createjs.Shape();
+                box.graphics.beginStroke('blue').beginFill('#555').drawRect(i * box_width, 0, box_width, box_height);
+                box.index = i;
+                box.clicked = false;
+                box.num = text;
+                boxes.box.push(box);
+
+                container.addChild(text, box);
+                box.on('click', function (evt) {
+                    var b = evt.target;
+                    if (!b.clicked) {
+                        b.clicked = true;
+                        b.alpha = 0.2;
+                        box_click(b, b.num, b.index);
+                    }
+                });
+            }
+
+            boxes.reset = function (t) {
+                for (i = 0; i < count; i++) {
+                    boxes.box[i].alpha = 1;
+                    if(i<t)
+                        boxes.box[i].num.text = "小";
+                    else if(i>t)
+                        boxes.box[i].num.text = "大";
+                    else
+                        boxes.box[i].num.text = " ";
+                    boxes.box[i].clicked = false;
+                }
+            };
+            boxes.openall = function (numbers) {
+                for (i = 0; i < count; i++) {
+                    boxes.box[i].num.text = numbers[i];
+                    if(boxes.box[i].alpha == 1)
+                        createjs.Tween.get(boxes.box[i]).to({"alpha": 0.05}, 600);
+                }
+            };
+            boxes.open = function (i) {
+                boxes.box[i].alpha = 0.2;
+            };
+            return boxes;
+        }
+
+        function gen_numbers(count) {
+            var nums = [];
+            var a = Math.random() * 50;
+            var b = (100 - a) / count;
+            for (i = 0; i < count; i++) {
+                a = Math.floor(a + Math.random() * b + 1);
+                nums.push(a);
+            }
+            return nums;
+        }
+
+        function init() {
+            stage = new createjs.Stage("demoCanvas");
+            stage.enableMouseOver();
+            var bg = new createjs.Shape();
+            bg.graphics.beginFill('#fff').drawRect(0, 0, stage.canvas.width, stage.canvas.height);
+
+            shape_target_number = new createjs.Text('', 'bold 30px Consola', 'black');
+            shape_target_number.x = 150;
+            shape_target_number.y = 20;
+            button1 = new Button('#000', '#f00', '新游戏', "bold 20px Arial", 100, 35);
+            button1.x = button1.y = 20;
+            stage.addChild(bg, button1, shape_target_number);
+
+            button1.on('click', function (evt) {
+                if (click_count > 0)
+                    new_game();
+            });
+
+            w = (stage.canvas.width - 50) / numbers_count;
+
+            boxes = gen_num_boxes(numbers_count, w, w, box_click);
+            boxes.g.x = 25;
+            boxes.g.y = 100;
+            stage.addChild(boxes.g);
+
+            new_game();
+
+            createjs.Ticker.timingMode = createjs.Ticker.RAF;
+            createjs.Ticker.addEventListener("tick", stage);
+        }
+        function box_click(box, text, i) {
+            click_count += 1;
+            if (numbers[i] == target_number) {
+                shape_target_number.text += '恭喜你，找到了。点击次数' + click_count + '。';
+                boxes.openall(numbers);
+            }
+        }
+
+        function new_game() {
+            numbers = gen_numbers(numbers_count);
+            console.log(numbers.join(' '))
+            var t = Math.floor(0 + Math.random() * (numbers_count - 0));
+            target_number = numbers[t];
+            shape_target_number.text = '查找目标:' + target_number + '。';
+            boxes.reset(t);
+            click_count = 0;
+        }
+    </script>
+    <style>
+        #demoCanvas {
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            -khtml-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+    </style>
+</head>
+
+<body onload="init();">
+    <canvas id="demoCanvas" width="800" height="150">
+        alternate content
+    </canvas>
+    <div style="margin: 100px 20px 0px 20px;">
+        <a href="bisection-search.html">了解二分法</a>
+    </div>
+</body>
+
+</html>
