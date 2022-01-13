@@ -121,11 +121,7 @@
                 container.addChild(text, box, drop_mask, idx);
                 box.on('click', function (evt) {
                     var b = evt.target;
-                    if (!b.clicked) {
-                        b.clicked = true;
-                        b.alpha = 0.2;
-                        box_click(b, b.num, b.index);
-                    }
+                    box_click(b, b.num, b.index);
                 });
             }
 
@@ -205,6 +201,12 @@
             createjs.Ticker.addEventListener("tick", stage);
         }
         function box_click(box, text, i) {
+            if(animates_enabled && i!=idx_center)
+                return;
+            if (box.clicked)
+                return;
+            box.clicked = true;
+            box.alpha = 0.2;
             click_count += 1;
             if (numbers[i] == target_number) {
                 shape_target_number.text += '找到了。点击次数' + click_count + '。';
@@ -258,7 +260,12 @@
         function new_game() {
             numbers = gen_numbers(numbers_count);
             console.log(numbers.join(' '))
-            target_number = numbers[Math.floor(7 + (Math.random() * 2 - 1) * (numbers_count - 5) / 2)];
+            var idxc=Math.floor(numbers_count/2);
+            var idx = idxc;
+            while(idx == idxc) {
+                idx = Math.floor(7 + (Math.random() * 2 - 1) * (numbers_count - 5) / 2);
+            }
+            target_number = numbers[idx];
             shape_target_number.text = '查找目标:' + target_number + '。';
             boxes.reset(numbers);
             click_count = 0;
