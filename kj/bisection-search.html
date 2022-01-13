@@ -5,7 +5,12 @@
     <title>二分法查找演示</title>
     <!-- <script src="https://cdn.plot.ly/plotly-2.8.3.min.js"></script> -->
     <!-- <script src="https://cdn.bootcdn.net/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.min.js"></script> -->
-	<script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
+    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
+    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="https://code.createjs.com/1.0.0/createjs.min.js"></script>
+
     <script>
         MathJax = {
             options: {
@@ -14,8 +19,6 @@
         };
     </script>
 
-
-    <script src="https://code.createjs.com/1.0.0/createjs.min.js"></script>
     <script>
         function Button(fc, bc, label, label_style, w, h) {
             var label1 = new createjs.Text(label, label_style, fc);
@@ -178,7 +181,7 @@
             stage.addChild(bg, button1, shape_target_number);
 
             button1.on('click', function (evt) {
-                if (click_count > 0 || document.getElementById('checkbox1').checked!=animates_enabled)
+                if (click_count > 0 || document.getElementById('checkbox1').checked != animates_enabled)
                     new_game();
             });
 
@@ -206,10 +209,10 @@
             if (numbers[i] == target_number) {
                 shape_target_number.text += '找到了。点击次数' + click_count + '。';
                 boxes.openall();
-                text_comp.x = down_arrow.x + down_arrow.getBounds().width/2;
+                text_comp.x = down_arrow.x + down_arrow.getBounds().width / 2;
                 text_comp.text = numbers[i] + '=' + target_number;
                 text_comp.textAlign = 'center';
-            } else if(numbers[i] < target_number) {
+            } else if (numbers[i] < target_number) {
                 text_comp.x = down_arrow.x;
                 text_comp.text = numbers[i] + '<' + target_number;
                 text_comp.textAlign = 'left';
@@ -219,7 +222,7 @@
                 text_comp.textAlign = 'right';
             }
 
-            if(animates_enabled) {
+            if (animates_enabled) {
                 text_comp.alpha = 1;
                 move_cursor();
             }
@@ -267,10 +270,10 @@
             text_comp.y = 100;
             text_comp.alpha = 0;
 
-            if(document.getElementById('checkbox1').checked) {
+            if (document.getElementById('checkbox1').checked) {
                 animates_enabled = true;
                 down_arrow.alpha = 1;
-            }else {
+            } else {
                 animates_enabled = false;
                 down_arrow.alpha = 0;
             }
@@ -300,9 +303,11 @@
             font-size: 25px;
             font-weight: bold;
         }
+
         .options {
             font-size: 20px;
         }
+
         .options input {
             vertical-align: middle;
             height: 25px;
@@ -334,46 +339,67 @@
                 <input id="checkbox1" type="checkbox">启用二分法辅助(重新开始生效)</input>
             </div>
         </div>
-        <div class='math-tex'>
-            <p class='title1'>算法</p>
-            <p class='para'>
-                以\(A\)表示包含目标的区域, \(T\)表示查找目标。
-            </p>
-            <p class='para'>
-                步骤一: 每次取A的中间位置的元素\( A_m\)，
-                将\(A\)分为\(A_{left}\)和\(A_{right}\)。
-                若\( A_m = T \)则完成查找。
-            </p>
-            <p class='para'>
-                否则，
-                \[
-                \begin{equation}
-                A=\left\{
-                \begin{aligned}
-                A_{left} && A_m \gt T \\
-                A_{right} && A_m \lt T \\
-                \end{aligned}
-                \right.
-                \end{equation}
-                \]
-            </p>
-            <p class='para'>
-                重复步骤一。
-            </p>
-            <p class='title1'>时间复杂度</p>
-            <p class='para'>
-                每次取值比较将待查找区间一分为二。最差的情况下，当待查找区间只有一个元素时命中目标。以\( n \)表示元素个数，\( x \)表示切分次数，则有：
-                \[ n \times (\frac{1}{2})^x = 1 \]
-                \[ n \times \frac{1}{2^x} = 1\]
-                \[ 2^x = n\]
-                \[ x = \log_2(n)\]
-            </p>
-            <p class='para'>
-                \( \log_2(1000000) \approx 20 \)，也即，当 \( n \) 为一百万时，最多经过20个步骤便可完成查找。
-            </p>
+        <div id="points" class='math-tex'>
+            <el-collapse v-model="activeNames">
+                <el-collapse-item name="1">
+                    <template slot="title">
+                        <span class="title1">算法说明</span>
+                    </template>
+                    <p class='para'>
+                        以\(A\)表示包含目标的区域, \(T\)表示查找目标。
+                    </p>
+                    <p class='para'>
+                        步骤一: 每次取A的中间位置的元素\( A_m\)，
+                        将\(A\)分为\(A_{left}\)和\(A_{right}\)。
+                        若\( A_m = T \)则完成查找。
+                    </p>
+                    <p class='para'>
+                        否则，
+                        \[
+                        \begin{equation}
+                        A=\left\{
+                        \begin{aligned}
+                        A_{left} && A_m \gt T \\
+                        A_{right} && A_m \lt T \\
+                        \end{aligned}
+                        \right.
+                        \end{equation}
+                        \]
+                    </p>
+                    <p class='para'>
+                        重复步骤一。
+                    </p>
+                </el-collapse-item>
+                <el-collapse-item name="2">
+                    <template slot="title">
+                        <span class="title1">时间复杂度</span>
+                    </template>
+                    <p class='para'>
+                        每次取值比较将待查找区间一分为二。最差的情况下，当待查找区间只有一个元素时命中目标。以\( n \)表示元素个数，\( x \)表示切分次数，则有：
+                        \[ n \times (\frac{1}{2})^x = 1 \]
+                        \[ n \times \frac{1}{2^x} = 1\]
+                        \[ 2^x = n\]
+                        \[ x = \log_2(n)\]
+                    </p>
+                    <p class='para'>
+                        \( \log_2(1000000) \approx 20 \)，也即，当 \( n \) 为一百万时，最多经过20个步骤便可完成查找。
+                    </p>
+                </el-collapse-item>
+            </el-collapse>
         </div>
         <div id="gd"></div>
     </div>
+    <script>
+        var Main = {
+            data() {
+                return {
+                    activeNames: []
+                };
+            }
+        }
+        var Ctor = Vue.extend(Main)
+        new Ctor().$mount('#points')
+    </script>
 </body>
 
 </html>
