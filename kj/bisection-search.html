@@ -67,19 +67,23 @@
             container.cursor = 'pointer';
             boxes.g = container;
             for (i = 0; i < count; i++) {
-                var text = new createjs.Text('888', 'bold 25px Consola', 'black');
+                var text = new createjs.Text('888', 'bold 20px Consola', '#2f9df7');
                 text.x = i * box_width + (box_width) / 2;
                 text.y = (box_height - 25) / 2;
                 text.textAlign = 'center';
                 var box = new createjs.Shape();
-                box.graphics.beginStroke('blue').beginFill('#555').drawRect(i * box_width, 0, box_width, box_height);
+                box.graphics.beginFill('#dcc7aa').drawRect(i * box_width, 0, box_width - 3, box_height -3);
                 box.index = i;
                 box.clicked = false;
                 box.num = text;
                 boxes.box.push(box);
                 boxes.num.push(text);
+                var box_shadow_r = new createjs.Shape()
+                var box_shadow_b = new createjs.Shape()
+                box_shadow_r.graphics.beginFill('#685f52').drawRect((i+1) * box_width - 3, 3, 3, box_height -3);
+                box_shadow_b.graphics.beginFill('#685f52').drawRect(i * box_width + 3, box_height -3, box_width - 3, 3);
                 drop_mask = new createjs.Shape();
-                drop_mask.graphics.beginStroke('#f00');
+                drop_mask.graphics.beginStroke('#ff6060');
                 drop_mask.graphics.setStrokeStyle(3);
                 drop_mask.graphics.moveTo(i * box_width, 0).lineTo((i + 1) * box_width, box_height);
                 drop_mask.graphics.moveTo((i + 1) * box_width, 0).lineTo(i * box_width, box_height);
@@ -91,7 +95,7 @@
                 idx.y = box_height + 4;
                 idx.textAlign = 'center';
 
-                container.addChild(text, box, drop_mask, idx);
+                container.addChild(box_shadow_r, box_shadow_b, text, box, drop_mask, idx);
                 box.on('click', function (evt) {
                     var b = evt.target;
                     box_click(b, b.num, b.index);
@@ -140,12 +144,12 @@
             stage = new createjs.Stage("canvas1");
             stage.enableMouseOver();
             var bg = new createjs.Shape();
-            bg.graphics.beginFill('#fff').drawRect(0, 0, stage.canvas.width, stage.canvas.height);
+            bg.graphics.beginFill('#f3f2ee').drawRect(0, 0, stage.canvas.width, stage.canvas.height);
 
             shape_target_number = new createjs.Text('', 'bold 25px Consola', 'black');
             shape_target_number.x = 200;
             shape_target_number.y = 25;
-            button1 = new Button('#000', '#f00', '重新开始', "bold 20px Arial", 150, 35);
+            button1 = new Button('#fff', '#fd6a19', '重新开始', "bold 20px Arial", 150, 35);
             button1.x = button1.y = 20;
             stage.addChild(bg, button1, shape_target_number);
 
@@ -186,6 +190,7 @@
                 text_comp.x = down_arrow.x + down_arrow.getBounds().width / 2;
                 text_comp.text = numbers[i] + '=' + target_number;
                 text_comp.textAlign = 'center';
+                box.num.color = '#f00'; //e86901
             } else if (numbers[i] < target_number) {
                 text_comp.x = down_arrow.x;
                 text_comp.text = numbers[i] + '<' + target_number;
@@ -311,7 +316,7 @@
             <p class='para'>使用二分法查找，在最多4次点击之内定位目标。</p>
         </div>
         <p class='title1'>演示</p>
-        <div style="border: solid black 1px;">
+        <div style="border: solid black 1px; background-color: #f3f2ee;">
             <canvas id="canvas1" width="800" height="250">
                 canvas
             </canvas>

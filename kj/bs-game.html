@@ -46,18 +46,22 @@
             container.cursor = 'pointer';
             boxes.g = container;
             for (i = 0; i < count; i++) {
-                var text = new createjs.Text('888', 'bold 25px Consola', 'black');
+                var text = new createjs.Text('888', 'bold 25px Consola', '#2f9df7');
                 text.x = i * box_width + (box_width) / 2;
                 text.y = (box_height - 25) / 2;
                 text.textAlign = 'center';
                 var box = new createjs.Shape();
-                box.graphics.beginStroke('blue').beginFill('#555').drawRect(i * box_width, 0, box_width, box_height);
+                box.graphics.beginFill('#dcc7aa').drawRect(i * box_width, 0, box_width - 3, box_height -3);
                 box.index = i;
                 box.clicked = false;
                 box.num = text;
                 boxes.box.push(box);
+                var box_shadow_r = new createjs.Shape()
+                var box_shadow_b = new createjs.Shape()
+                box_shadow_r.graphics.beginFill('#685f52').drawRect((i+1) * box_width - 3, 3, 3, box_height -3);
+                box_shadow_b.graphics.beginFill('#685f52').drawRect(i * box_width + 3, box_height -3, box_width - 3, 3);
 
-                container.addChild(text, box);
+                container.addChild(box_shadow_r, box_shadow_b, text, box);
                 box.on('click', function (evt) {
                     var b = evt.target;
                     if (!b.clicked) {
@@ -108,12 +112,12 @@
             stage = new createjs.Stage("demoCanvas");
             stage.enableMouseOver();
             var bg = new createjs.Shape();
-            bg.graphics.beginFill('#fff').drawRect(0, 0, stage.canvas.width, stage.canvas.height);
+            bg.graphics.beginFill('#f3f2ee').drawRect(0, 0, stage.canvas.width, stage.canvas.height);
 
             shape_target_number = new createjs.Text('', 'bold 30px Consola', 'black');
             shape_target_number.x = 150;
             shape_target_number.y = 20;
-            button1 = new Button('#000', '#f00', '新游戏', "bold 20px Arial", 100, 35);
+            button1 = new Button('#fff', '#fd6a19', '新游戏', "bold 20px Arial", 100, 35);
             button1.x = button1.y = 20;
             stage.addChild(bg, button1, shape_target_number);
 
@@ -139,6 +143,7 @@
             if (numbers[i] == target_number) {
                 shape_target_number.text += '恭喜你，找到了。点击次数' + click_count + '。';
                 boxes.openall(numbers);
+                box.num.color = '#f00';
             }
         }
 
@@ -160,6 +165,9 @@
             -moz-user-select: none;
             -ms-user-select: none;
             user-select: none;
+        }
+        color {
+            color: rgb(180, 76, 76);
         }
     </style>
 </head>
