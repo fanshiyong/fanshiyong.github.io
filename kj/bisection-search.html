@@ -4,20 +4,8 @@
 <head>
     <meta charset="utf-8" />
     <title>二分法查找演示</title>
-    <!-- <script src="https://cdn.plot.ly/plotly-2.8.3.min.js"></script> -->
-    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.14"></script>
-    <link rel="stylesheet" href="https://unpkg.com/element-ui/lib/theme-chalk/index.css">
-    <script src="https://unpkg.com/element-ui/lib/index.js"></script>
+    <script src="../lib/vue.min.js"></script>
     <script src="../lib/createjs.min.js"></script>
-
-    <script>
-        MathJax = {
-            options: {
-                enableMenu: false
-            }
-        };
-    </script>
 
     <script>
         function Button(fc, bc, label, label_style, w, h) {
@@ -161,7 +149,7 @@
             for (i = 0; i < count; i++) {
                 nums[i] = Math.floor(nums[i] * factor + a);
             }
-            nums.sort();
+            nums.sort(function(a,b){return a-b;});
             return nums;
         }
 
@@ -274,11 +262,12 @@
 
             numbers = gen_numbers(numbers_count);
             console.log(numbers.join(' '))
-            var idxc = Math.floor(numbers_count / 2);
-            var idx = idxc;
-            while (idx >= (idxc - 1) && idx <= (idxc + 1)) {
-                idx = Math.floor(7 + (Math.random() * 2 - 1) * (numbers_count - 5) / 2);
-            }
+            // var idxc = Math.floor(numbers_count / 2);
+            // var idx = idxc;
+            // while (idx >= (idxc - 1) && idx <= (idxc + 1)) {
+            //     idx = Math.floor(7 + (Math.random() * 2 - 1) * (numbers_count - 5) / 2);
+            // }
+            var idx = 5+Math.floor(Math.random()*(numbers_count-5));
             target_number = numbers[idx];
             shape_target_number.text = '查找目标:' + target_number + '。';
             if(show_number_enabled)
@@ -341,7 +330,7 @@
 
 <body onload="init();">
     <div id='frame'>
-        <div class='title'>二分法查找演示</div>
+        <div class='title'>二分法查找练习</div>
         <div>
             <p class='title1'>问题</p>
             <p class='para'>
@@ -349,9 +338,17 @@
             </p>
             <p class='para'>
                 序列中元素由计算机随机产生，除升序外无其它分布规律。
-                通过点击可知元素的值与查找目标的比较结果：或大、或小、或相等。
             </p>
-            <p class='para'>请进行多轮尝试，是否可以做到每轮都在最多4次点击之内定位目标。</p>
+            <p class="title1">练习</p>
+            <p class="para">1. 穷举法：由左到右依次点击查看元素是否为目标。
+                <a href="#gd" onclick="vue.useAssistant=false; new_game();">开始</a>
+            </p>
+            <p class='para'>2. 二分法：启用“使用二分法查找辅助”选项，进行多轮查找，确认可以做到每轮都在最多4次点击之内定位目标。
+                <a href="#gd" onclick="vue.useAssistant=true; new_game();">开始</a>
+            </p>
+            <p class="para">3. 二分法：关闭“使用二分法查找辅助”选项，练习二分法查找。
+                <a href="#gd" onclick="vue.useAssistant=false; new_game();">开始</a>
+            </p>
         </div>
         <p class='title1'>演示</p>
         <div style="border: solid black 1px; background-color: #f3f2ee;">
@@ -372,63 +369,14 @@
                 </div>
             </div>
         </div>
-        <div id="points" class='math-tex'>
-            <el-collapse v-model="activeNames">
-                <el-collapse-item name="1">
-                    <template slot="title">
-                        <span class="title1">算法说明</span>
-                    </template>
-                    <p class='para'>
-                        以\(A\)表示包含目标的区域, \(T\)表示查找目标。
-                    </p>
-                    <p class='para'>
-                        步骤一: 每次取\(A\)的中间位置的元素\( A_m\)，
-                        将\(A\)分为\(A_{left}\)和\(A_{right}\)。
-                        若\( A_m = T \)则完成查找。
-                    </p>
-                    <p class='para'>
-                        否则，
-                        \[
-                        \begin{equation}
-                        A=\left\{
-                        \begin{aligned}
-                        A_{left} && A_m \gt T \\
-                        A_{right} && A_m \lt T \\
-                        \end{aligned}
-                        \right.
-                        \end{equation}
-                        \]
-                    </p>
-                    <p class='para'>
-                        重复步骤一。
-                    </p>
-                </el-collapse-item>
-                <el-collapse-item name="2">
-                    <template slot="title">
-                        <span class="title1">时间复杂度</span>
-                    </template>
-                    <p class='para'>
-                        每次取值比较将待查找区间一分为二。最差的情况下，当待查找区间只有一个元素时命中目标。以\( n \)表示元素个数，\( x \)表示切分次数，则有：
-                        \[ n \times (\frac{1}{2})^x = 1 \]
-                        \[ n \times \frac{1}{2^x} = 1\]
-                        \[ 2^x = n\]
-                        \[ x = \log_2(n)\]
-                    </p>
-                    <p class='para'>
-                        \( \log_2(1000000) \approx 20 \)，也即，当 \( n \) 为一百万时，最多经过20个步骤便可完成查找。
-                    </p>
-                </el-collapse-item>
-            </el-collapse>
-        </div>
         <div id="gd"></div>
     </div>
     <script>
         var vue = new Vue({
             el: '#frame',
             data: {
-                activeNames: [],
                 useAssistant: false,
-                showNumber: false
+                showNumber: true
             },
             methods: {
 
