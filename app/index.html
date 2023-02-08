@@ -1,0 +1,55 @@
+<html>
+    <head>
+        <title>apps</title>
+        <script src="https://cdn.jsdelivr.net/npm/vue@2.7.14"></script>
+        <style>
+            body, input, button {
+                font-size: 55px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="rhl">
+            <p>
+                已知一段圆弧的宽度和高度，计算半径以及弧长。
+            </p>
+            <div>
+                <input id="rhl-l" v-model="rhl.l">
+                <label for="rhl-l">宽</label>
+            </div>
+            <div>
+                <input id="rhl-h" v-model="rhl.h">
+                <label for="rhl-h">高</label>
+            </div>
+            <div>
+                <button onclick="rhl_get_r()">计算</button>
+            </div>
+            <div>半径：{{rhl.r}} <br/>弧长：{{rhl.arc}}</div>
+    </div>
+    </body>
+    <script>
+        var vue = new Vue({
+            el: '#rhl',
+            data: {
+                rhl: {
+                    l: "",
+                    h: "",
+                    r: "",
+                    arc: ""
+                }
+            },
+            methods: {
+
+            }
+        });
+
+        function rhl_get_r() {
+            l = vue.rhl.l
+            h = vue.rhl.h
+            r = (l*l+4*h*h)/(8*h)
+            vue.rhl.r = r.toFixed(1)
+            a = Math.asin(l/2/r)
+            vue.rhl.arc = (r*a*2).toFixed(1)
+        }
+    </script>
+</html>
